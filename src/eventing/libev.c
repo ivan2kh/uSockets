@@ -141,11 +141,6 @@ LIBUS_SOCKET_DESCRIPTOR us_poll_fd(struct us_poll_t *p) {
     return p->io->fd;
 }
 
-// Loop functions
-void us_loop_pump(struct us_loop_t *loop) {
-    ev_run(loop->ev_loop, EVRUN_NOWAIT);
-}
-
 struct us_loop_t *us_create_loop(void *hint, void (*wakeup_cb)(struct us_loop_t *loop),
                                  void (*pre_cb)(struct us_loop_t *loop),
                                  void (*post_cb)(struct us_loop_t *loop), unsigned int ext_size) {
@@ -205,6 +200,7 @@ void us_loop_free(struct us_loop_t *loop) {
 void us_loop_run(struct us_loop_t *loop) {
     us_loop_integrate(loop); // Ensure integrated if not done already
     ev_run(loop->ev_loop, 0); // 0 means run until ev_break or no active watchers
+    us_internal_loop_post(loop); //free closed sockets
 }
 
 struct us_poll_t *us_create_poll(struct us_loop_t *loop, int fallthrough, unsigned int ext_size) {
